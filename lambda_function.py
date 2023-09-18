@@ -1,15 +1,21 @@
+
+### import all necesary libraries
 import json
 import boto3
 
+### This lambda function is used to insert, update, delete and get items from the dynamoDB table
 def lambda_handler(event, context):
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('company')
 
+    ### Check the HTTP method
     try:
         http_method = event['httpMethod']
         
+        ### GET method
         if http_method == 'GET':
             try:
+                ### scan the table
                 response = table.scan()
                 items = response['Items']
 
@@ -22,6 +28,7 @@ def lambda_handler(event, context):
                     'statusCode': 500,
                     'body': json.dumps(str(e))
                 }
+        ### POST method
         elif http_method == 'POST':
             try:
                 payload = json.loads(event['body'])
@@ -31,7 +38,7 @@ def lambda_handler(event, context):
                     'website': payload['website'],
                     'size': payload['size']
                 }
-
+                ### insert the item
                 table.put_item(Item=item)
 
                 return {
@@ -43,6 +50,7 @@ def lambda_handler(event, context):
                     'statusCode': 500,
                     'body': json.dumps(str(e))
                 }
+        ### DELETE method
         elif http_method == 'DELETE':
             try:
                 payload = json.loads(event['body'])
@@ -61,7 +69,7 @@ def lambda_handler(event, context):
                         'statusCode': 400,
                         'body': json.dumps('Item not found')
                     }
-                # delete the item
+                ### delete the item
                 table.delete_item(
                     Key={
                         'name': payload['name'],
@@ -78,7 +86,7 @@ def lambda_handler(event, context):
                     'statusCode': 500,
                     'body': json.dumps(str(e))
                 }
-                
+        ### PUT method
         elif http_method == 'PUT':
             try:
                 payload = json.loads(event['body'])
@@ -97,7 +105,7 @@ def lambda_handler(event, context):
                         'statusCode': 400,
                         'body': json.dumps('Item not found')
                     }
-                # update the item
+                ### update the item
                 item = {
                     'name': payload['name'],
                     'website': payload['website'],
